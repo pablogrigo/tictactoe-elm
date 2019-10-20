@@ -4,3 +4,5 @@ elm-stuff
 repl-temp-*
 # local elm installation
 node_modules/
+# build output folder
+build/

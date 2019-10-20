@@ -4,6 +4,7 @@
   "description": "The classic TicTacToe, written in Elm.",
   "main": "index.html",
   "scripts": {
+    "build": "rm -rf build/ && mkdir -p build/ && cp public/* build/ && ./node_modules/.bin/elm make src/Main.elm --output=build/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
