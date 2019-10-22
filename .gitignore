@@ -1,8 +1,18 @@
 # elm-package generated files
 elm-stuff
+
 # elm-repl generated files
 repl-temp-*
+
 # local elm installation
 node_modules/
+
 # build output folder
 build/
+
+# editors
+.vscode
+.idea
+
+# local build
+public/main.js
