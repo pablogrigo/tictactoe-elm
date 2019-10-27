@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "./node_modules/.bin/elm make src/Main.elm --output=public/main.js",
     "watch": "chokidar 'src/**/*.elm' -c './node_modules/.bin/elm make src/Main.elm --output public/main.js' --initial",
-    "build": "rm -rf build/ && mkdir -p build/ && cp public/* build/ && ./node_modules/.bin/elm make src/Main.elm --output=build/main.js",
+    "build": "rm -rf build/ && mkdir -p build/ && cp public/* build/ && ./node_modules/.bin/elm make src/Main.elm --optimize --output=build/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

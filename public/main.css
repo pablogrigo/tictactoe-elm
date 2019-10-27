@@ -1,3 +1,22 @@
-body {
-    text-align: center;
+.board {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 6em 6em 6em;
+    grid-template-rows: 6em 6em 6em;
+    grid-gap: 0.2em
+}
+
+.board__cell {
+    background-color: lightblue;
+    width: 100%;
+    height: 100%;
+    font-size: 2rem;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.board__cell:hover {
+    background-color: lightcoral;
 }
