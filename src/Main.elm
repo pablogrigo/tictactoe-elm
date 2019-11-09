@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, button, div, form, h3, li, nav, p, span, sup, text, ul)
 import Html.Attributes exposing (class, disabled)
 import Html.Events exposing (onClick, onSubmit)
+import Random
 
 
 
@@ -123,64 +124,96 @@ status movements initialPlayer =
                 Moves initialPlayer
 
 
+requestRandomNumber : Cmd Msg
+requestRandomNumber =
+    Random.generate OnRandomNumber <| Random.int 0 Random.maxInt
+
+
 type Msg
     = Move Cell
     | Reset
-
-
-
--- Main
+    | OnRandomNumber Int
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = \_ -> Sub.none
+        }
 
 
 
 -- Init
 
 
-init : Model
-init =
-    { movements = []
-    , initial = X
-    }
+init : String -> ( Model, Cmd Msg )
+init _ =
+    initForPlayer X
+
+
+initForPlayer : Player -> ( Model, Cmd Msg )
+initForPlayer initial =
+    ( { movements = []
+      , initial = initial
+      }
+    , if initial == X then
+        Cmd.none
+
+      else
+        requestRandomNumber
+    )
 
 
 
 -- Update
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
+        unusedCells =
+            allCells |> List.filter (\cell -> model.movements |> List.filter (\(Movement c _) -> c == cell) |> List.isEmpty)
+
+        unusedCellsAvailable =
+            not <| List.isEmpty unusedCells
+
         gameStatus =
             status model.movements model.initial
     in
-    case msg of
-        Reset ->
-            { init | initial = otherPlayer model.initial }
+    case ( msg, gameStatus, unusedCellsAvailable ) of
+        ( Reset, _, _ ) ->
+            initForPlayer <| otherPlayer model.initial
 
-        Move cell ->
-            case gameStatus of
-                Tie ->
-                    model
+        ( OnRandomNumber randomNumber, Moves O, True ) ->
+            let
+                maybeUnusedCell =
+                    List.drop (modBy (List.length unusedCells) randomNumber) unusedCells |> List.head
+            in
+            case maybeUnusedCell of
+                Just unusedCell ->
+                    ( { model | movements = List.append model.movements [ Movement unusedCell O ] }, Cmd.none )
 
-                Wins _ ->
-                    model
+                Nothing ->
+                    ( model, Cmd.none )
 
-                Moves player ->
-                    if (model.movements |> movementForCell cell) == Nothing then
-                        { model | movements = List.append model.movements [ Movement cell player ] }
+        ( Move cell, Moves X, _ ) ->
+            if (model.movements |> movementForCell cell) == Nothing then
+                ( { model | movements = List.append model.movements [ Movement cell X ] }, requestRandomNumber )
 
-                    else
-                        model
+            else
+                ( model, Cmd.none )
+
+        ( _, _, _ ) ->
+            ( model, Cmd.none )
 
 
 
 -- View
 
 
+view : Model -> Html Msg
 view model =
     let
         gameStatus =

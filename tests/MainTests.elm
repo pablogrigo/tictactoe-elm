@@ -10,14 +10,10 @@ initTests =
     describe "init function"
         [ test "should start with no movements" <|
             \() ->
-                init
-                    |> .movements
-                    |> Expect.equal []
+                init "" |> expectMovements []
         , test "should start with X moving" <|
             \() ->
-                init
-                    |> .initial
-                    |> Expect.equal X
+                init "" |> expectInitial X
         ]
 
 
@@ -26,43 +22,36 @@ updateTests =
     describe "update function"
         [ test "should accept movement when cell when empty" <|
             \() ->
-                update (Move C) init
-                    |> .movements
-                    |> Expect.equal (moves [ ( C, X ) ])
+                update (Move C) (Tuple.first (init ""))
+                    |> expectMovements (moves [ ( C, X ) ])
         , test "should ignore movement when cell is used" <|
             \() ->
                 let
                     xSingleMovementOnC =
                         moves [ ( C, X ) ]
                 in
-                update (Move C) (model xSingleMovementOnC X)
-                    |> .movements
-                    |> Expect.equal xSingleMovementOnC
+                update (Move C) (createModel xSingleMovementOnC X)
+                    |> expectMovements xSingleMovementOnC
         , test "should ignore movement when game finished (tie)" <|
             \() ->
-                update (Move C) (model tieBoard X)
-                    |> .movements
-                    |> Expect.equal tieBoard
+                update (Move C) (createModel tieBoard X)
+                    |> expectMovements tieBoard
         , test "should ignore movement when game finished (winner X)" <|
             \() ->
-                update (Move C) (model xWinsBoard X)
-                    |> .movements
-                    |> Expect.equal xWinsBoard
+                update (Move C) (createModel xWinsBoard X)
+                    |> expectMovements xWinsBoard
         , test "should ignore movement when game finished (winner O)" <|
             \() ->
-                update (Move C) (model oWinsBoard X)
-                    |> .movements
-                    |> Expect.equal oWinsBoard
+                update (Move C) (createModel oWinsBoard X)
+                    |> expectMovements oWinsBoard
         , test "should clear movements when resetting" <|
             \() ->
-                update Reset (model oWinsBoard X)
-                    |> .movements
-                    |> Expect.equal []
+                update Reset (createModel oWinsBoard X)
+                    |> expectMovements []
         , test "should swap initial player when resetting game" <|
             \() ->
-                update Reset (model oWinsBoard X)
-                    |> .initial
-                    |> Expect.equal O
+                update Reset (createModel oWinsBoard X)
+                    |> expectInitial O
         ]
 
 
@@ -110,6 +99,16 @@ movementForCellTests =
         ]
 
 
+expectMovements : List Movement -> ( Model, Cmd Msg ) -> Expectation
+expectMovements movements ( model, _ ) =
+    model |> .movements |> Expect.equal movements
+
+
+expectInitial : Player -> ( Model, Cmd Msg ) -> Expectation
+expectInitial player ( model, _ ) =
+    model |> .initial |> Expect.equal player
+
+
 xWinsBoard : List Movement
 xWinsBoard =
     moves [ ( A, X ), ( G, O ), ( B, X ), ( H, O ), ( C, X ) ]
@@ -130,8 +129,8 @@ moves pairs =
     pairs |> List.map (\( cell, player ) -> Movement cell player)
 
 
-model : List Movement -> Player -> Model
-model movements initial =
+createModel : List Movement -> Player -> Model
+createModel movements initial =
     { movements = movements
     , initial = initial
     }
